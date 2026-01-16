@@ -135,6 +135,14 @@ API_PROVIDER_INFO = {
         "guide": "1. Go to Google AI Studio → Get API Key\n  2. Create API key in Google Cloud Console\n  3. Copy your API key",
         "required": False,
     },
+    "DEEPSEEK_API_KEY": {
+        "name": "DeepSeek",
+        "color": Colors.CYAN,
+        "icon": "🔍",
+        "url": "https://platform.deepseek.com/api_keys",
+        "guide": "1. Go to DeepSeek Platform → API Keys\n  2. Click 'Create API Key'\n  3. Copy your API key",
+        "required": False,
+    },
     "OPENAI_COMPATIBLE_API_KEY": {
         "name": "OpenAI Compatible",
         "color": Colors.CYAN,
@@ -331,6 +339,7 @@ def load_existing_env_vars():
             "XAI_API_KEY": backend_env.get("XAI_API_KEY", ""),
             "MORPH_API_KEY": backend_env.get("MORPH_API_KEY", ""),
             "GEMINI_API_KEY": backend_env.get("GEMINI_API_KEY", ""),
+            "DEEPSEEK_API_KEY": backend_env.get("DEEPSEEK_API_KEY", ""),
             "OPENAI_COMPATIBLE_API_KEY": backend_env.get("OPENAI_COMPATIBLE_API_KEY", ""),
             "OPENAI_COMPATIBLE_API_BASE": backend_env.get("OPENAI_COMPATIBLE_API_BASE", ""),
             "AWS_BEARER_TOKEN_BEDROCK": backend_env.get("AWS_BEARER_TOKEN_BEDROCK", ""),

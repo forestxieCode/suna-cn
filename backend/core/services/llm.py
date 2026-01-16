@@ -130,6 +130,14 @@ def setup_api_keys() -> None:
     
     if getattr(config, 'AWS_BEARER_TOKEN_BEDROCK', None):
         os.environ["AWS_BEARER_TOKEN_BEDROCK"] = config.AWS_BEARER_TOKEN_BEDROCK
+    
+    # Set DeepSeek API key for LiteLLM
+    if getattr(config, 'DEEPSEEK_API_KEY', None):
+        os.environ["DEEPSEEK_API_KEY"] = config.DEEPSEEK_API_KEY
+    
+    # Set Gemini API key for LiteLLM
+    if getattr(config, 'GEMINI_API_KEY', None):
+        os.environ["GEMINI_API_KEY"] = config.GEMINI_API_KEY
 
 def _configure_openai_compatible(model_name: str, api_key: Optional[str], api_base: Optional[str]) -> None:
     if not model_name.startswith("openai-compatible/"):

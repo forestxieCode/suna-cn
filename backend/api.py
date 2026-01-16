@@ -52,7 +52,9 @@ from core.services.orphan_cleanup import cleanup_orphaned_agent_runs
 
 
 if sys.platform == "win32":
-    asyncio.set_event_loop_policy(asyncio.WindowsProactorEventLoopPolicy())
+    # Use SelectorEventLoop for psycopg compatibility
+    # ProactorEventLoop is incompatible with psycopg on Windows
+    asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 
 db = DBConnection()
 # Use shared instance ID for distributed deployments
@@ -574,7 +576,9 @@ if __name__ == "__main__":
     import uvicorn
     
     if sys.platform == "win32":
-        asyncio.set_event_loop_policy(asyncio.WindowsProactorEventLoopPolicy())
+        # Use SelectorEventLoop for psycopg compatibility
+        # ProactorEventLoop is incompatible with psycopg on Windows
+        asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
     
     # Enable reload mode for local and staging environments
     is_dev_env = config.ENV_MODE in [EnvMode.LOCAL, EnvMode.STAGING]
