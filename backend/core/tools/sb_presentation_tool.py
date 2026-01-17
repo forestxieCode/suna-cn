@@ -1421,14 +1421,27 @@ class SandboxPresentationTool(SandboxToolsBase):
     ) -> Dict:
         """Internal helper to export to a specific format (pptx or pdf)"""
         try:
-            convert_response = await client.post(
-                f"{self.sandbox_url}/presentation/convert-to-{format_type}",
-                json={
-                    "presentation_path": presentation_path,
-                    "download": not store_locally
-                },
-                timeout=180.0
-            )
+            # Try localhost first to avoid Daytona proxy warning pages
+            try:
+                # First attempt with localhost (internal communication)
+                convert_response = await client.post(
+                    f"http://localhost:8080/presentation/convert-to-{format_type}",
+                    json={
+                        "presentation_path": presentation_path,
+                        "download": not store_locally
+                    },
+                    timeout=180.0
+                )
+            except Exception:
+                # Fallback to sandbox_url if localhost fails
+                convert_response = await client.post(
+                    f"{self.sandbox_url}/presentation/convert-to-{format_type}",
+                    json={
+                        "presentation_path": presentation_path,
+                        "download": not store_locally
+                    },
+                    timeout=180.0
+                )
             
             if not convert_response.is_success:
                 error_detail = convert_response.json().get("detail", "Unknown error") if convert_response.headers.get("content-type", "").startswith("application/json") else convert_response.text
