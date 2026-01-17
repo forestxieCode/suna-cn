@@ -22,19 +22,20 @@ from core.billing.credits.media_integration import media_billing
 router = APIRouter(prefix="/canvas-ai", tags=["Canvas AI"])
 
 # Model configurations
+# Model configurations
 MODELS = {
     "replicate-gpt": "openai/gpt-image-1.5",  # GPT Image via Replicate
-    "gemini-pro": "google/gemini-3-pro-image-preview",  # OpenRouter
-    "gemini-flash": "google/gemini-2.5-flash-image",  # OpenRouter - fast & reliable
+    "gemini-pro": "qwen-vl-max",  # Aliyun Bailian Qwen-VL-Max
+    "gemini-flash": "qwen-vl-plus",  # Aliyun Bailian Qwen-VL-Plus - fast & reliable
     "replicate-remove-bg": "851-labs/background-remover",
     "replicate-upscale": "recraft-ai/recraft-crisp-upscale",
 }
 
-# OpenRouter config
+# OpenRouter config (replaced with Bailian)
 OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY", "")
-OPENROUTER_BASE_URL = "https://openrouter.ai/api/v1"
+OPENROUTER_BASE_URL = "https://dashscope.aliyuncs.com/compatible-mode/v1"
 
-# Default model - Gemini Flash via OpenRouter (fast, reliable, ~$0.04/image)
+# Default model - Qwen-VL-Plus via Bailian (fast, reliable)
 DEFAULT_MODEL = "gemini-flash"
 
 
@@ -95,12 +96,14 @@ class OCRResponse(BaseModel):
     error: Optional[str] = None
 
 
-# Model mapping per action - backend decides which model to use
+# Map actions to specific models
+# Replaced Replicate models with Bailian Qwen-VL (via DEFAULT_MODEL) to remove Replicate dependency
 ACTION_MODELS = {
-    "remove_bg": "replicate-remove-bg",   # Replicate 851-labs/background-remover
-    "upscale": "replicate-upscale",       # Replicate recraft-ai/recraft-crisp-upscale
-    "edit_text": "replicate-gpt",         # Replicate GPT Image 1.5 (quality: low)
-    "mark_edit": "replicate-gpt",         # Replicate GPT Image 1.5 (quality: low)
+    "remove_bg": DEFAULT_MODEL,  # replicate-remove-bg -> qwen-vl (Note: functionality may vary)
+    "upscale": DEFAULT_MODEL,    # replicate-upscale -> qwen-vl
+    "edit_text": DEFAULT_MODEL,  # replicate-gpt -> qwen-vl
+    "mark_edit": DEFAULT_MODEL,  # replicate-gpt -> qwen-vl
+    "ask": "gemini-flash",       # Standard generic default (qwen-vl-plus)
 }
 
 

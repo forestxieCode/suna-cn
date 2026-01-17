@@ -112,11 +112,11 @@ API_PROVIDER_INFO = {
         "required": False,
     },
     "OPENROUTER_API_KEY": {
-        "name": "OpenRouter",
+        "name": "阿里百炼 (Alibaba Bailian)",
         "color": Colors.BLUE,
         "icon": "🌐",
-        "url": "https://openrouter.ai/keys",
-        "guide": "1. Go to OpenRouter → Keys\n  2. Click 'Create Key'\n  3. Copy your API key",
+        "url": "https://bailian.console.aliyun.com/",
+        "guide": "1. 访问阿里云百炼平台\n  2. 登录并创建应用\n  3. 获取API Key\n  4. 支持模型: qwen-turbo, qwen-plus, qwen-max",
         "required": False,
     },
     "XAI_API_KEY": {

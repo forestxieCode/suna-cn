@@ -122,6 +122,12 @@ def setup_api_keys() -> None:
         # Use configured base URL or default to official OpenRouter API
         openrouter_base = getattr(config, 'OPENROUTER_API_BASE', None) or "https://openrouter.ai/api/v1"
         os.environ["OPENROUTER_API_BASE"] = openrouter_base
+        
+        # HACK: 如果检测到阿里百炼，自动配置OpenAI兼容环境，以支持无前缀模型ID (e.g. qwen-plus)
+        if "aliyuncs.com" in openrouter_base:
+            logger.info("⚡ Detected Alibaba Bailian configuration, auto-configuring OpenAI compatible environment")
+            os.environ["OPENAI_API_KEY"] = config.OPENROUTER_API_KEY
+            os.environ["OPENAI_API_BASE"] = openrouter_base
     
     if getattr(config, 'OR_APP_NAME', None):
         os.environ["OR_APP_NAME"] = config.OR_APP_NAME

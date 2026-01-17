@@ -50,34 +50,41 @@ class ModelRegistry:
         # Register Haiku Bedrock ARN pricing for billing resolution
         self._litellm_id_to_pricing[HAIKU_BEDROCK_ARN] = HAIKU_PRICING
         
-        # MiniMax M2.1 pricing (LiteLLM may return model ID without openrouter/ prefix)
-        minimax_m2_pricing = ModelPricing(
-            input_cost_per_million_tokens=0.30,
-            output_cost_per_million_tokens=1.20,
-            cached_read_cost_per_million_tokens=0.03,
-            cache_write_5m_cost_per_million_tokens=0.375,
+        # 阿里百炼 Qwen-Plus 价格 (¥0.8/M input, ¥2.0/M output) -> Approx $0.11/M, $0.28/M
+        qwen_plus_pricing = ModelPricing(
+            input_cost_per_million_tokens=0.11,
+            output_cost_per_million_tokens=0.28,
+            cached_read_cost_per_million_tokens=0.01,
+            cache_write_5m_cost_per_million_tokens=0.14,
         )
-        self._litellm_id_to_pricing["minimax/minimax-m2.1"] = minimax_m2_pricing
-        self._litellm_id_to_pricing["openrouter/minimax/minimax-m2.1"] = minimax_m2_pricing
+        self._litellm_id_to_pricing["qwen-plus"] = qwen_plus_pricing
         
-        # Kortix Basic - using MiniMax M2.1
-        # Anthropic: basic_litellm_id = build_bedrock_profile_arn(HAIKU_4_5_PROFILE_ID) if SHOULD_USE_BEDROCK else "anthropic/claude-haiku-4-5-20251001"
-        basic_litellm_id = "openrouter/minimax/minimax-m2.1"  # 204,800 context $0.30/M input tokens $1.20/M output tokens
+        # 阿里百炼 Qwen-Max 价格 (¥20/M input, ¥60/M output) -> Approx $2.8/M, $8.3/M
+        qwen_max_pricing = ModelPricing(
+            input_cost_per_million_tokens=2.80,
+            output_cost_per_million_tokens=8.30,
+            cached_read_cost_per_million_tokens=0.28,
+            cache_write_5m_cost_per_million_tokens=3.00,
+        )
+        self._litellm_id_to_pricing["qwen-max"] = qwen_max_pricing
+        
+        # Kortix Basic - 使用 Qwen-Plus (阿里百炼)
+        basic_litellm_id = "openai/qwen-plus"
         
         self.register(Model(
             id="kortix/basic",
-            name="Kortix Basic",
-            litellm_model_id=basic_litellm_id,
-            provider=ModelProvider.OPENROUTER,
-            aliases=["kortix-basic", "Kortix Basic"],
-            context_window=200_000,
+            name="Kortix Basic (Qwen Plus)",
+            litellm_model_id=basic_litellm_id,  # 明确指定使用 OpenAI 兼容协议
+            provider=ModelProvider.OPENROUTER, # 保持OpenRouter配置，通过Base URL指向阿里百炼
+            aliases=["kortix-basic", "Kortix Basic", "qwen-plus"],
+            context_window=128_000, # Qwen支持30k-128k取决于版本，设保守些
             capabilities=[
                 ModelCapability.CHAT,
                 ModelCapability.FUNCTION_CALLING,
-                # ModelCapability.VISION,
+                # ModelCapability.VISION, # Qwen-Plus暂不开启Vision以防万一
                 ModelCapability.PROMPT_CACHING,
             ],
-            pricing=minimax_m2_pricing,
+            pricing=qwen_plus_pricing,
             tier_availability=["free", "paid"],
             priority=102,
             recommended=True,
@@ -85,17 +92,16 @@ class ModelRegistry:
             config=ModelConfig()
         ))
         
-        # Kortix Power - using MiniMax M2.1
-        # Anthropic: power_litellm_id = build_bedrock_profile_arn(HAIKU_4_5_PROFILE_ID) if SHOULD_USE_BEDROCK else "anthropic/claude-haiku-4-5-20251001"
-        power_litellm_id = "openrouter/minimax/minimax-m2.1"  # 204,800 context $0.30/M input tokens $1.20/M output tokens
+        # Kortix Power - 使用 Qwen-Max (阿里百炼)
+        power_litellm_id = "openai/qwen-max"
         
         self.register(Model(
             id="kortix/power",
-            name="Kortix Advanced Mode",
-            litellm_model_id=power_litellm_id,
+            name="Kortix Advanced (Qwen Max)",
+            litellm_model_id="openai/qwen-max",  # 明确指定使用 OpenAI 兼容协议
             provider=ModelProvider.OPENROUTER,
             aliases=["kortix-power", "Kortix POWER Mode", "Kortix Power", "Kortix Advanced Mode"],
-            context_window=200_000,
+            context_window=128_000,
             capabilities=[
                 ModelCapability.CHAT,
                 ModelCapability.FUNCTION_CALLING,
@@ -103,7 +109,7 @@ class ModelRegistry:
                 ModelCapability.THINKING,
                 ModelCapability.PROMPT_CACHING,
             ],
-            pricing=minimax_m2_pricing,
+            pricing=qwen_max_pricing,
             tier_availability=["paid"],
             priority=101,
             recommended=True,
@@ -111,68 +117,31 @@ class ModelRegistry:
             config=ModelConfig()
         ))
         
-        # Claude Haiku 4.5 - can be used as a fallback for vision tasks
-        haiku_litellm_id = HAIKU_BEDROCK_ARN if SHOULD_USE_BEDROCK else "anthropic/claude-haiku-4-5-20251001"
+        # Qwen-Turbo (快速模式)
+        qwen_turbo_pricing = ModelPricing(
+            input_cost_per_million_tokens=0.04,
+            output_cost_per_million_tokens=0.08,
+            cached_read_cost_per_million_tokens=0.004,
+            cache_write_5m_cost_per_million_tokens=0.05,
+        )
         
-        self.register(Model(
-            id="kortix/haiku",
-            name="Claude Haiku 4.5",
-            litellm_model_id=haiku_litellm_id,
-            provider=ModelProvider.BEDROCK if SHOULD_USE_BEDROCK else ModelProvider.ANTHROPIC,
-            aliases=[haiku_litellm_id],
-            context_window=200_000,
-            capabilities=[
-                ModelCapability.CHAT,
-                ModelCapability.FUNCTION_CALLING,
-                ModelCapability.VISION,
-                ModelCapability.PROMPT_CACHING,
-            ],
-            pricing=HAIKU_PRICING,
-            tier_availability=["free", "paid"],
-            priority=50,
-            recommended=False,
-            enabled=True,
-            config=ModelConfig(
-                extra_headers={
-                    "anthropic-beta": "fine-grained-tool-streaming-2025-05-14,token-efficient-tools-2025-02-19"
-                },
-            )
-        ))
-        
-        # Kortix Test - uses MiniMax M2.1 via direct API (only in LOCAL and STAGING, not PRODUCTION)
+        # Kortix Test - 使用 Qwen-Turbo
         if config.ENV_MODE != EnvMode.PRODUCTION:
-            # MiniMax direct API - requires MINIMAX_API_KEY env var
-            # Docs: https://docs.litellm.ai/docs/providers/minimax
-            # test_litellm_id = "minimax/MiniMax-M2.1"  # 204,800 context $0.30/M input $1.20/M output
-            test_litellm_id = "openrouter/minimax/minimax-m2.1"  # 204,800 context $0.30/M input $1.20/M output 
-            # test_litellm_id = "minimax/MiniMax-M2.1-lightning"  # Faster ~100 tps, $2.40/M output
-            # test_litellm_id = "minimax/MiniMax-M2"  # Agentic capabilities
-            # test_litellm_id = build_bedrock_profile_arn(MINIMAX_M2_PROFILE_ID)
-            # test_litellm_id ="openrouter/minimax/minimax-m2" #  205K context $0.255/M input $1.02/M output
-            # test_litellm_id ="openrouter/z-ai/glm-4.6v" #  204,800 context $0.30/M input $1.20/M output
-            # test_litellm_id = "openrouter/google/gemini-3-flash-preview"
-            # test_litellm_id = "openrouter/x-ai/grok-4.1-fast"
-            # test_litellm_id ="groq/moonshotai/kimi-k2-instruct" 
+            test_litellm_id = "qwen-turbo"
 
             self.register(Model(
                 id="kortix/test",
-                name="Kortix Test",
+                name="Kortix Test (Qwen Turbo)",
                 litellm_model_id=test_litellm_id,
-                provider=ModelProvider.MINIMAX,
-                aliases=["kortix-test", "Kortix Test"],
-                context_window=200_000,
+                provider=ModelProvider.OPENROUTER,
+                aliases=["kortix-test", "Kortix Test", "qwen-turbo"],
+                context_window=128_000,
                 capabilities=[
                     ModelCapability.CHAT,
                     ModelCapability.FUNCTION_CALLING,
-                    ModelCapability.THINKING,
                     ModelCapability.PROMPT_CACHING,
                 ],
-                pricing=ModelPricing(
-                    input_cost_per_million_tokens=0.30,
-                    output_cost_per_million_tokens=1.20,
-                    cached_read_cost_per_million_tokens=0.03,
-                    cache_write_5m_cost_per_million_tokens=0.375,
-                ),
+                pricing=qwen_turbo_pricing,
                 tier_availability=["free", "paid"],
                 priority=100,
                 recommended=False,

@@ -293,7 +293,7 @@ class Configuration:
     MORPH_API_KEY: Optional[str] = None
     GEMINI_API_KEY: Optional[str] = None
     DEEPSEEK_API_KEY: Optional[str] = None
-    OPENROUTER_API_BASE: Optional[str] = "https://openrouter.ai/api/v1"
+    OPENROUTER_API_BASE: Optional[str] = "https://dashscope.aliyuncs.com/compatible-mode/v1"  # 已替换为阿里百炼
     OPENAI_COMPATIBLE_API_KEY: Optional[str] = None
     OPENAI_COMPATIBLE_API_BASE: Optional[str] = None
     OR_SITE_URL: Optional[str] = "https://www.kortix.com"

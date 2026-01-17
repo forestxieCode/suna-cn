@@ -36,6 +36,7 @@ from core.sandbox import api as sandbox_api
 # REMOVED: Billing module disabled for unrestricted access
 # from core.billing.api import router as billing_router
 from core.setup import router as setup_router, webhook_router
+from core.billing.endpoints.account_state import router as account_state_router
 from core.admin.admin_api import router as admin_router
 # REMOVED: Billing admin module disabled
 # from core.admin.billing_admin_api import router as billing_admin_router
@@ -309,8 +310,11 @@ api_router.include_router(threads_router)
 api_router.include_router(categorization_router)
 api_router.include_router(endpoints_router)
 api_router.include_router(sandbox_api.router)
-# REMOVED: Billing router disabled
+# REMOVED: Full Billing module disabled
 # api_router.include_router(billing_router)
+# RESTORED: Account state endpoint only (required for frontend model selection)
+api_router.include_router(account_state_router, prefix="/billing")
+
 api_router.include_router(setup_router)
 api_router.include_router(webhook_router)  # Webhooks at /api/webhooks/*
 api_router.include_router(api_keys_api.router)
