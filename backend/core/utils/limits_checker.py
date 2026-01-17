@@ -18,32 +18,23 @@ async def _get_tier_info_if_needed(account_id: str, tier_info: Optional[Dict] = 
     """
     Get tier info from cache/DB only if not already provided.
     This avoids N+1 queries when called from account_state.
+    
+    MODIFIED: Always return unlimited tier to bypass payment restrictions.
     """
     if tier_info is not None:
         return tier_info
     
-    try:
-        from core.cache.runtime_cache import get_cached_tier_info, set_cached_tier_info
-        cached_tier = await get_cached_tier_info(account_id)
-        if cached_tier:
-            logger.debug(f"⚡ Tier from cache: {cached_tier.get('name')}")
-            return cached_tier
-        
-        from core.billing import subscription_service
-        fresh_tier = await subscription_service.get_user_subscription_tier(account_id, skip_cache=False)
-        await set_cached_tier_info(account_id, fresh_tier)
-        return fresh_tier
-    except Exception as e:
-        logger.warning(f"Could not get tier for {account_id}: {e}, using defaults")
-        return {
-            'name': 'free',
-            'concurrent_runs': config.MAX_PARALLEL_AGENT_RUNS,
-            'thread_limit': 10,
-            'project_limit': 3,
-            'custom_workers_limit': 0,
-            'scheduled_triggers_limit': 1,
-            'app_triggers_limit': 2,
-        }
+    # Return unlimited tier configuration - no restrictions
+    logger.debug(f"⚡ Using unlimited tier for {account_id} (payment restrictions removed)")
+    return {
+        'name': 'unlimited',
+        'concurrent_runs': 999999,
+        'thread_limit': 999999,
+        'project_limit': 999999,
+        'custom_workers_limit': 999999,
+        'scheduled_triggers_limit': 999999,
+        'app_triggers_limit': 999999,
+    }
 
 
 async def check_agent_run_limit(account_id: str, tier_info: Optional[Dict] = None, client=None) -> Dict[str, Any]:

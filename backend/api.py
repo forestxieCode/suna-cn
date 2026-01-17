@@ -33,10 +33,12 @@ from core.categorization.api import router as categorization_router
 from core.endpoints import router as endpoints_router
 
 from core.sandbox import api as sandbox_api
-from core.billing.api import router as billing_router
+# REMOVED: Billing module disabled for unrestricted access
+# from core.billing.api import router as billing_router
 from core.setup import router as setup_router, webhook_router
 from core.admin.admin_api import router as admin_router
-from core.admin.billing_admin_api import router as billing_admin_router
+# REMOVED: Billing admin module disabled
+# from core.admin.billing_admin_api import router as billing_admin_router
 from core.admin.feedback_admin_api import router as feedback_admin_router
 from core.admin.notification_admin_api import router as notification_admin_router
 from core.admin.analytics_admin_api import router as analytics_admin_router
@@ -307,11 +309,13 @@ api_router.include_router(threads_router)
 api_router.include_router(categorization_router)
 api_router.include_router(endpoints_router)
 api_router.include_router(sandbox_api.router)
-api_router.include_router(billing_router)
+# REMOVED: Billing router disabled
+# api_router.include_router(billing_router)
 api_router.include_router(setup_router)
 api_router.include_router(webhook_router)  # Webhooks at /api/webhooks/*
 api_router.include_router(api_keys_api.router)
-api_router.include_router(billing_admin_router)
+# REMOVED: Billing admin router disabled
+# api_router.include_router(billing_admin_router)
 api_router.include_router(admin_router)
 api_router.include_router(feedback_admin_router)
 api_router.include_router(notification_admin_router)
