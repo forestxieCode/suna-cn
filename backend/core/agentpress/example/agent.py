@@ -1,7 +1,12 @@
 import asyncio
+import sys
 from core.agentpress.thread_manager import ThreadManager
 from core.agentpress.tool import Tool, ToolResult, openapi_schema
 from core.agentpress.response_processor import ProcessorConfig
+
+# Fix for Windows: Use SelectorEventLoop instead of ProactorEventLoop for psycopg compatibility
+if sys.platform == 'win32':
+    asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 
 class CalculatorTool(Tool):
     @openapi_schema({
@@ -145,7 +150,7 @@ Available tools:
             thread_id=thread_id,
             system_prompt=system_prompt,
             stream=True,
-            llm_model="gpt-5",
+            llm_model="qwen-plus",  # Using Alibaba Bailian Qwen-Plus model (you can also use "qwen-max" or "kortix/basic")
             processor_config=ProcessorConfig(
                 xml_tool_calling=True,
                 execute_tools=True,
@@ -165,4 +170,13 @@ Available tools:
         print(f"Failed to fetch conversation history: {e}")
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    # Use SelectorEventLoop on Windows for psycopg compatibility
+    if sys.platform == 'win32':
+        loop = asyncio.SelectorEventLoop()
+        asyncio.set_event_loop(loop)
+        try:
+            loop.run_until_complete(main())
+        finally:
+            loop.close()
+    else:
+        asyncio.run(main())
