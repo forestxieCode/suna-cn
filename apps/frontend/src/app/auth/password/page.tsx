@@ -9,6 +9,7 @@ import { KortixLoader } from '@/components/ui/kortix-loader';
 import { toast } from '@/lib/toast';
 
 import { Input } from '@/components/ui/input';
+import { Checkbox } from '@/components/ui/checkbox';
 import { SubmitButton } from '@/components/ui/submit-button';
 import { signInWithPassword, signUpWithPassword } from '../actions';
 import { useAuth } from '@/components/AuthProvider';
@@ -19,9 +20,12 @@ function PasswordAuthContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const returnUrl = searchParams.get('returnUrl') || searchParams.get('redirect');
+  const referralCodeParam = searchParams.get('ref') || '';
   const { user, isLoading } = useAuth();
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isSignUp, setIsSignUp] = useState(false);
+  const [referralCode, setReferralCode] = useState(referralCodeParam);
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
 
   // Redirect if already authenticated
   useEffect(() => {
@@ -37,9 +41,13 @@ function PasswordAuthContent() {
 
   const handleAuth = async (prevState: any, formData: FormData) => {
     setErrorMessage(null);
-    
+
+    // Add additional fields
+    formData.append('acceptedTerms', acceptedTerms.toString());
+    formData.append('referralCode', referralCode);
+
     try {
-      const result = isSignUp 
+      const result = isSignUp
         ? await signUpWithPassword(prevState, formData)
         : await signInWithPassword(prevState, formData);
 
@@ -60,7 +68,7 @@ function PasswordAuthContent() {
         // Server-side redirect happened, client will follow
         return;
       }
-      
+
       const errorMsg = error?.message || 'An unexpected error occurred';
       setErrorMessage(errorMsg);
       toast.error(errorMsg);
@@ -134,7 +142,7 @@ function PasswordAuthContent() {
                 {isSignUp ? 'Create Account' : 'Sign in'}
               </h1>
               <p className="text-base md:text-lg text-center text-muted-foreground font-medium text-balance leading-relaxed tracking-tight mt-2 mb-6">
-                {isSignUp 
+                {isSignUp
                   ? 'Enter your email and password to create your account'
                   : 'Enter your email and password to access your account'
                 }
@@ -191,6 +199,37 @@ function PasswordAuthContent() {
                   </div>
                 )}
 
+                {isSignUp && (
+                  <div className="space-y-4">
+                    <Input
+                      id="referralCode"
+                      name="referralCode"
+                      type="text"
+                      placeholder="Referral Code (Optional)"
+                      className="h-12 rounded-full bg-background border-border"
+                      value={referralCode}
+                      onChange={(e) => setReferralCode(e.target.value)}
+                    />
+
+                    <div className="flex items-start space-x-2 pt-2">
+                      <Checkbox
+                        id="terms"
+                        checked={acceptedTerms}
+                        onCheckedChange={(checked) => setAcceptedTerms(checked === true)}
+                        required
+                      />
+                      <div className="grid gap-1.5 leading-none">
+                        <label
+                          htmlFor="terms"
+                          className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                        >
+                          I accept the <a href="https://www.kortix.com/legal?tab=terms" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">Terms of Service</a> and <a href="https://www.kortix.com/legal?tab=privacy" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">Privacy Policy</a>
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
                 {returnUrl && (
                   <input type="hidden" name="returnUrl" value={returnUrl} />
                 )}
@@ -201,6 +240,7 @@ function PasswordAuthContent() {
                     formAction={handleAuth}
                     className="w-full h-12 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 transition-all shadow-md"
                     pendingText={isSignUp ? 'Creating account...' : 'Signing in...'}
+                    disabled={isSignUp && !acceptedTerms}
                   >
                     {isSignUp ? 'Create account' : 'Sign in'}
                   </SubmitButton>

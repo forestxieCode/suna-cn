@@ -9,7 +9,7 @@ import { useMediaQuery } from '@/hooks/utils';
 import { useState, useEffect, Suspense, lazy } from 'react';
 import { signUp, resendMagicLink } from './actions';
 import { useSearchParams, useRouter } from 'next/navigation';
-import { MailCheck, Clock, ExternalLink } from 'lucide-react';
+import { MailCheck, Clock, ExternalLink, Lock } from 'lucide-react';
 import { KortixLoader } from '@/components/ui/kortix-loader';
 import { useAuth } from '@/components/AuthProvider';
 import { useAuthMethodTracking } from '@/stores/auth-tracking';
@@ -499,6 +499,20 @@ function LoginContent() {
               <p className="text-xs text-muted-foreground text-center">
                 {t('magicLinkExplanation')}
               </p>
+
+              <div className="relative flex justify-center text-sm py-2">
+                <span className="px-2 bg-background text-muted-foreground/50 text-xs">
+                  Or
+                </span>
+              </div>
+
+              <Button asChild variant="outline" className="w-full h-10 gap-2" type="button">
+                <Link href="/auth/password">
+                  <Lock className="h-4 w-4" />
+                  <span>Continue with Password</span>
+                </Link>
+              </Button>
+
 
               {/* Minimal Referral Link */}
               {!referralCodeParam && (

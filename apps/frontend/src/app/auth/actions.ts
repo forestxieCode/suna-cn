@@ -46,8 +46,8 @@ export async function signIn(prevState: any, formData: FormData) {
   }
 
   // Return success message - user needs to check email
-  return { 
-    success: true, 
+  return {
+    success: true,
     message: 'Check your email for a magic link to sign in',
     email: email.trim().toLowerCase(),
   };
@@ -102,11 +102,11 @@ export async function signUp(prevState: any, formData: FormData) {
   }
 
   // Return success message - user needs to check email
-    return {
-    success: true, 
+  return {
+    success: true,
     message: 'Check your email for a magic link to complete sign up',
     email: email.trim().toLowerCase(),
-    };
+  };
 }
 
 export async function forgotPassword(prevState: any, formData: FormData) {
@@ -202,8 +202,8 @@ export async function resendMagicLink(prevState: any, formData: FormData) {
   }
 
   // Return success message - user needs to check email
-  return { 
-    success: true, 
+  return {
+    success: true,
     message: 'Check your email for a magic link to sign in',
     email: email.trim().toLowerCase(),
   };
@@ -236,7 +236,7 @@ export async function signInWithPassword(prevState: any, formData: FormData) {
   // Determine if new user (for analytics)
   const isNewUser = data.user && (Date.now() - new Date(data.user.created_at).getTime()) < 60000;
   const authEvent = isNewUser ? 'signup' : 'login';
-  
+
   // Return success - client will handle redirect with auth tracking params
   const finalReturnUrl = returnUrl || '/dashboard';
   const redirectUrl = new URL(finalReturnUrl, 'http://localhost');
@@ -251,9 +251,15 @@ export async function signUpWithPassword(prevState: any, formData: FormData) {
   const confirmPassword = formData.get('confirmPassword') as string;
   const returnUrl = formData.get('returnUrl') as string | undefined;
   const origin = formData.get('origin') as string;
+  const acceptedTerms = formData.get('acceptedTerms') === 'true';
+  const referralCode = formData.get('referralCode') as string | undefined;
 
   if (!email || !email.includes('@')) {
     return { message: 'Please enter a valid email address' };
+  }
+
+  if (!acceptedTerms) {
+    return { message: 'Please accept the terms and conditions' };
   }
 
   if (!password || password.length < 6) {
@@ -274,6 +280,10 @@ export async function signUpWithPassword(prevState: any, formData: FormData) {
     password,
     options: {
       emailRedirectTo,
+      data: {
+        ...(referralCode ? { referral_code: referralCode.trim().toUpperCase() } : {}),
+        terms_accepted_at: new Date().toISOString(),
+      },
     },
   });
 
