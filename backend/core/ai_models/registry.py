@@ -64,52 +64,52 @@ class ModelRegistry:
         # Anthropic: basic_litellm_id = build_bedrock_profile_arn(HAIKU_4_5_PROFILE_ID) if SHOULD_USE_BEDROCK else "anthropic/claude-haiku-4-5-20251001"
         basic_litellm_id = "openrouter/minimax/minimax-m2.1"  # 204,800 context $0.30/M input tokens $1.20/M output tokens
         
-        self.register(Model(
-            id="kortix/basic",
-            name="Kortix Basic",
-            litellm_model_id=basic_litellm_id,
-            provider=ModelProvider.OPENROUTER,
-            aliases=["kortix-basic", "Kortix Basic"],
-            context_window=200_000,
-            capabilities=[
-                ModelCapability.CHAT,
-                ModelCapability.FUNCTION_CALLING,
-                # ModelCapability.VISION,
-                ModelCapability.PROMPT_CACHING,
-            ],
-            pricing=minimax_m2_pricing,
-            tier_availability=["free", "paid"],
-            priority=102,
-            recommended=True,
-            enabled=True,
-            config=ModelConfig()
-        ))
+        # self.register(Model(
+        #     id="kortix/basic",
+        #     name="Kortix Basic",
+        #     litellm_model_id=basic_litellm_id,
+        #     provider=ModelProvider.OPENROUTER,
+        #     aliases=["kortix-basic", "Kortix Basic"],
+        #     context_window=200_000,
+        #     capabilities=[
+        #         ModelCapability.CHAT,
+        #         ModelCapability.FUNCTION_CALLING,
+        #         # ModelCapability.VISION,
+        #         ModelCapability.PROMPT_CACHING,
+        #     ],
+        #     pricing=minimax_m2_pricing,
+        #     tier_availability=["free", "paid"],
+        #     priority=102,
+        #     recommended=True,
+        #     enabled=True,
+        #     config=ModelConfig()
+        # ))
         
         # Kortix Power - using MiniMax M2.1
         # Anthropic: power_litellm_id = build_bedrock_profile_arn(HAIKU_4_5_PROFILE_ID) if SHOULD_USE_BEDROCK else "anthropic/claude-haiku-4-5-20251001"
         power_litellm_id = "openrouter/minimax/minimax-m2.1"  # 204,800 context $0.30/M input tokens $1.20/M output tokens
         
-        self.register(Model(
-            id="kortix/power",
-            name="Kortix Advanced Mode",
-            litellm_model_id=power_litellm_id,
-            provider=ModelProvider.OPENROUTER,
-            aliases=["kortix-power", "Kortix POWER Mode", "Kortix Power", "Kortix Advanced Mode"],
-            context_window=200_000,
-            capabilities=[
-                ModelCapability.CHAT,
-                ModelCapability.FUNCTION_CALLING,
-                # ModelCapability.VISION,
-                ModelCapability.THINKING,
-                ModelCapability.PROMPT_CACHING,
-            ],
-            pricing=minimax_m2_pricing,
-            tier_availability=["paid"],
-            priority=101,
-            recommended=True,
-            enabled=True,
-            config=ModelConfig()
-        ))
+        # self.register(Model(
+        #     id="kortix/power",
+        #     name="Kortix Advanced Mode",
+        #     litellm_model_id=power_litellm_id,
+        #     provider=ModelProvider.OPENROUTER,
+        #     aliases=["kortix-power", "Kortix POWER Mode", "Kortix Power", "Kortix Advanced Mode"],
+        #     context_window=200_000,
+        #     capabilities=[
+        #         ModelCapability.CHAT,
+        #         ModelCapability.FUNCTION_CALLING,
+        #         # ModelCapability.VISION,
+        #         ModelCapability.THINKING,
+        #         ModelCapability.PROMPT_CACHING,
+        #     ],
+        #     pricing=minimax_m2_pricing,
+        #     tier_availability=["paid"],
+        #     priority=101,
+        #     recommended=True,
+        #     enabled=True,
+        #     config=ModelConfig()
+        # ))
         
         # Claude Haiku 4.5 - can be used as a fallback for vision tasks
         haiku_litellm_id = HAIKU_BEDROCK_ARN if SHOULD_USE_BEDROCK else "anthropic/claude-haiku-4-5-20251001"
@@ -137,6 +137,59 @@ class ModelRegistry:
                     "anthropic-beta": "fine-grained-tool-streaming-2025-05-14,token-efficient-tools-2025-02-19"
                 },
             )
+        ))
+        
+        # DeepSeek Chat - fast and cost-effective model
+        deepseek_chat_pricing = ModelPricing(
+            input_cost_per_million_tokens=0.14,
+            output_cost_per_million_tokens=0.28,
+        )
+        self._litellm_id_to_pricing["deepseek/deepseek-chat"] = deepseek_chat_pricing
+        
+        self.register(Model(
+            id="kortix/basic",
+            name="DeepSeek Chat",
+            litellm_model_id="deepseek/deepseek-chat",
+            provider=ModelProvider.OPENAI,  # DeepSeek uses OpenAI-compatible API
+            aliases=["deepseek-chat", "DeepSeek Chat"],
+            context_window=64_000,
+            capabilities=[
+                ModelCapability.CHAT,
+                ModelCapability.FUNCTION_CALLING,
+            ],
+            pricing=deepseek_chat_pricing,
+            tier_availability=["free", "paid"],
+            priority=60,
+            recommended=False,
+            enabled=True,
+            config=ModelConfig()
+        ))
+        
+        # DeepSeek Reasoner (R1) - advanced reasoning model
+        deepseek_reasoner_pricing = ModelPricing(
+            input_cost_per_million_tokens=0.55,
+            output_cost_per_million_tokens=2.19,
+        )
+        self._litellm_id_to_pricing["deepseek/deepseek-reasoner"] = deepseek_reasoner_pricing
+        
+        self.register(Model(
+            id="kortix/power",
+            name="DeepSeek Reasoner",
+            litellm_model_id="deepseek/deepseek-reasoner",
+            provider=ModelProvider.OPENAI,  # DeepSeek uses OpenAI-compatible API
+            aliases=["deepseek-reasoner", "DeepSeek Reasoner", "deepseek-r1"],
+            context_window=64_000,
+            capabilities=[
+                ModelCapability.CHAT,
+                ModelCapability.FUNCTION_CALLING,
+                ModelCapability.THINKING,
+            ],
+            pricing=deepseek_reasoner_pricing,
+            tier_availability=["paid"],
+            priority=65,
+            recommended=False,
+            enabled=True,
+            config=ModelConfig()
         ))
         
         # Kortix Test - uses MiniMax M2.1 via direct API (only in LOCAL and STAGING, not PRODUCTION)
